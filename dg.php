@@ -118,9 +118,9 @@ file_put_contents("stop2.xml",$xml_pre.$message_stop1.$xml_post);
 
 // Load to Amazon S3
 $stop3 = file_get_contents('stop3.xml');
-S3::putObject($stop3,$s3_bucket,'stop3.xml',S3::ACL_PUBLIC_READ,array(),array(),S3::STORAGE_CLASS_RRS);
+S3::putObject($stop3,$s3_bucket,'stop3.xml',S3::ACL_PUBLIC_READ,array(),array('Content-Type' => 'text/plain'),S3::STORAGE_CLASS_RRS);
 
 $stop2 = file_get_contents('stop2.xml');
-S3::putObject($stop2,$s3_bucket,'stop2.xml',S3::ACL_PUBLIC_READ,array(),array(),S3::STORAGE_CLASS_RRS);
+S3::putObject($stop2,$s3_bucket,'stop2.xml',S3::ACL_PUBLIC_READ,array(),array('Content-Type' => 'text/plain'),S3::STORAGE_CLASS_RRS);
 
 ?>
