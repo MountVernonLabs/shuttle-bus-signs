@@ -8,13 +8,40 @@ $s3 = new S3($s3_key, $s3_secret);
 $zone = 0;
 
 // Wharf Shuttle
-$location_data = file_get_contents("http://www.mountvernon.org/shuttle-tracker/api?bus=4&cache=".date("hisa"),true);
+$pdo=new PDO("mysql:dbname=mv_shuttle;host=".$db,$db_user,$db_pass);
+$statement=$pdo->prepare("SELECT ID,Latitude,Longitude,Angle,Speed,DateOccurred FROM positions WHERE FK_Users_ID = 4 ORDER BY ID desc LIMIT 1");
+$statement->execute();
+
+$pdo_big=new PDO("mysql:dbname=prod_mntvernon;host=".$db,$db_user,$db_pass);
+$statement_big=$pdo_big->prepare("SELECT start_time,end_time,start_date,end_date,stop_wait FROM mv_shuttle WHERE route = 4");
+$statement_big->execute();
+
+$results_big=$statement_big->fetchAll(PDO::FETCH_ASSOC);
+$results=$statement->fetchAll(PDO::FETCH_ASSOC);
+
+foreach( $results_big as $row ) {
+    $results["start_time"]= $row["start_time"];
+    $results["end_time"]= $row["end_time"];
+    $results["start_date"]= $row["start_date"];
+    $results["end_date"]= $row["end_date"];
+    $results["stop_wait"]= $row["stop_wait"];
+}
+
+$today = date("Y-m-d");
+
+if (time() >= strtotime($results["start_time"]) && time() <= strtotime($results["end_time"]) && $results["start_date"] <= $today && $results["end_date"] >= $today ) {
+  $results["status"] = "open";
+} else {
+  $results["status"] = "closed";
+}
+
+$location_data=json_encode($results);
 $location = json_decode($location_data);
 
 // Find out what zone the bus is in
 // On the map is top, bottom, left, rights
 function busZone($lat,$long){
-  if ($lat < 38.711079 && $lat > 38.709729 && $long < -77.090243 && $long > -77.087647){
+  if ($lat < 38.711079 && $lat > 38.709729 && $long > -77.090243 && $long < -77.087647){
     $zone = 1;
   }
   if ($lat < 38.710886 && $lat > 38.709729 && $long > -77.092382 && $long < -77.090243){
@@ -69,7 +96,7 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
           $message_stop2 = "1 min";
           $message_stop3 = "3 min";
         }
-        if ($zone == 3 && $location->{'0'}->Angle < 90 && $location->{'0'}->Angle > 270){
+        if ($zone == 3 && ($location->{'0'}->Angle < 90 || $location->{'0'}->Angle > 270)){
           $message_stop1 = "2 min";
           $message_stop2 = "5 min";
           $message_stop3 = "7 min";
@@ -80,7 +107,7 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
           $message_stop2 = "Arriving";
           $message_stop3 = "2 min";
         }
-        if ($zone == 4 && $location->{'0'}->Angle < 90 && $location->{'0'}->Angle > 270){
+        if ($zone == 4 && ($location->{'0'}->Angle < 90 || $location->{'0'}->Angle > 270)){
           $message_stop1 = "3 min";
           $message_stop2 = "Arriving";
           $message_stop3 = "8 min";
@@ -91,7 +118,7 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
           $message_stop2 = "3 min";
           $message_stop3 = "1 min";
         }
-        if ($zone == 5 && $location->{'0'}->Angle < 90 && $location->{'0'}->Angle > 270){
+        if ($zone == 5 && ($location->{'0'}->Angle < 90 || $location->{'0'}->Angle > 270)){
           $message_stop1 = "4 min";
           $message_stop2 = "1 min";
           $message_stop3 = "9 min";
@@ -107,6 +134,7 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
   $message_stop2 = "Closed";
   $message_stop3 = "Closed";
 }
+echo "Lat ".$location->{'0'}->Latitude." Long ".$location->{'0'}->Longitude."\n";
 echo "In Zone ".$zone." Moving ".$location->{'0'}->Angle."\n";
 echo "Stop 1: ".$message_stop1."\n";
 echo "Stop 2: ".$message_stop2."\n";

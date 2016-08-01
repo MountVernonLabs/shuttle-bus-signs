@@ -8,7 +8,34 @@ $s3 = new S3($s3_key, $s3_secret);
 $zone = 0;
 
 // Distillery and Gristmill Shuttle
-$location_data = file_get_contents("http://www.mountvernon.org/shuttle-tracker/api?bus=5&cache=".date("hisa"),true);
+$pdo=new PDO("mysql:dbname=mv_shuttle;host=".$db,$db_user,$db_pass);
+$statement=$pdo->prepare("SELECT ID,Latitude,Longitude,Angle,Speed,DateOccurred FROM positions WHERE FK_Users_ID = 5 ORDER BY ID desc LIMIT 1");
+$statement->execute();
+
+$pdo_big=new PDO("mysql:dbname=prod_mntvernon;host=".$db,$db_user,$db_pass);
+$statement_big=$pdo_big->prepare("SELECT start_time,end_time,start_date,end_date,stop_wait FROM mv_shuttle WHERE route = 5");
+$statement_big->execute();
+
+$results_big=$statement_big->fetchAll(PDO::FETCH_ASSOC);
+$results=$statement->fetchAll(PDO::FETCH_ASSOC);
+
+foreach( $results_big as $row ) {
+    $results["start_time"]= $row["start_time"];
+    $results["end_time"]= $row["end_time"];
+    $results["start_date"]= $row["start_date"];
+    $results["end_date"]= $row["end_date"];
+    $results["stop_wait"]= $row["stop_wait"];
+}
+
+$today = date("Y-m-d");
+
+if (time() >= strtotime($results["start_time"]) && time() <= strtotime($results["end_time"]) && $results["start_date"] <= $today && $results["end_date"] >= $today ) {
+  $results["status"] = "open";
+} else {
+  $results["status"] = "closed";
+}
+
+$location_data=json_encode($results);
 $location = json_decode($location_data);
 
 // Find out what zone the bus is in
@@ -108,6 +135,7 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
   $message_stop2 = "Closed";
 }
 
+echo "Lat ".$location->{'0'}->Latitude." Long ".$location->{'0'}->Longitude."\n";
 echo "In Zone ".$zone." Moving ".$location->{'0'}->Angle."\n";
 echo "Stop 1: ".$message_stop1."\n";
 echo "Stop 2: ".$message_stop2."\n";
