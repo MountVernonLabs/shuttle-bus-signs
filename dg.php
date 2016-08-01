@@ -41,7 +41,7 @@ $location = json_decode($location_data);
 // Find out what zone the bus is in
 // On the map is top, bottom, left, rights
 function busZone($lat,$long){
-  if ($lat < 38.712681 && $lat > 38.709685 && $long < -77.089047 && $long > -77.087145){
+  if ($lat < 38.712681 && $lat > 38.709685 && $long > -77.089047 && $long < -77.087145){
     $zone = 1;
   }
   if ($lat < 38.717292 && $lat > 38.711172 && $long > -77.096535 && $long < -77.089047){
