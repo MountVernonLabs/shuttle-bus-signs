@@ -70,14 +70,22 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
         $zone = busZone($location->{'0'}->Latitude,$location->{'0'}->Longitude);
         // Fixed stops
         if ($zone == 1){
-          $message_stop1 = "Arriving";
+          if ($location->{'0'}->Speed == 0) {
+            $message_stop1 = "Arrived";
+          } else{
+            $message_stop1 = "Arriving";
+          }
           $message_stop2 = "3 min";
           $message_stop3 = "6 min";
         }
         if ($zone == 6){
           $message_stop1 = "6 min";
           $message_stop2 = "2 min";
-          $message_stop3 = "Arriving";
+          if ($location->{'0'}->Speed == 0) {
+            $message_stop3 = "Arrived";
+          } else{
+            $message_stop3 = "Arriving";
+          }
         }
         // Calculate direction
         if ($zone == 2 && $location->{'0'}->Angle > 180){
@@ -104,12 +112,20 @@ if (new DateTime() > new DateTime($location->start_date) && new DateTime() < new
 
         if ($zone == 4 && $location->{'0'}->Angle > 90 && $location->{'0'}->Angle < 270){
           $message_stop1 = "7 min";
-          $message_stop2 = "Arriving";
+          if ($location->{'0'}->Speed == 0) {
+            $message_stop2 = "Arrived";
+          } else{
+            $message_stop2 = "Arriving";
+          }
           $message_stop3 = "2 min";
         }
         if ($zone == 4 && ($location->{'0'}->Angle < 90 || $location->{'0'}->Angle > 270)){
           $message_stop1 = "3 min";
-          $message_stop2 = "Arriving";
+          if ($location->{'0'}->Speed == 0) {
+            $message_stop2 = "Arrived";
+          } else{
+            $message_stop2 = "Arriving";
+          }
           $message_stop3 = "8 min";
         }
 
