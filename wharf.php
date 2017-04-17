@@ -120,6 +120,7 @@ file_put_contents("stop5.xml",$xml_pre.$message_stop2.$xml_post);
 file_put_contents("stop4.xml",$xml_pre.$message_stop3.$xml_post);
 
 // Load to Amazon S3
+S3::putObject($location_data,$s3_bucket,'wharf.json',S3::ACL_PUBLIC_READ,array(),array('Content-Type' => 'text/plain'),S3::STORAGE_CLASS_RRS);
 $stop1 = file_get_contents('stop1.xml');
 S3::putObject($stop1,$s3_bucket,'stop1.xml',S3::ACL_PUBLIC_READ,array(),array('Content-Type' => 'text/plain'),S3::STORAGE_CLASS_RRS);
 $stop4 = file_get_contents('stop4.xml');
