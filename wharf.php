@@ -28,8 +28,14 @@ foreach( $results_big as $row ) {
 }
 
 $today = date("Y-m-d");
+$current_time = (int) date('Gi');
+$start_time = date("Gi", strtotime($results["start_time"]));
+$end_time = date("Gi", strtotime($results["end_time"]));
+$start_date = date("Y-m-d", strtotime($results["start_date"]));
+$end_date = date("Y-m-d", strtotime($results["end_date"]));
 
-if (time() >= strtotime($results["start_time"]) && time() <= strtotime($results["end_time"]) && $results["start_date"] <= $today && $results["end_date"] >= $today ) {
+
+if (($current_time > $start_time) && ($current_time < $end_time) && ($today > $start_date) && ($today < $end_date)) {
   $results["status"] = "open";
 } else {
   $results["status"] = "closed";
@@ -162,6 +168,9 @@ file_put_contents("stop1.xml",$xml_pre.$message_stop1.$xml_post);
 file_put_contents("stop5.xml",$xml_pre.$message_stop2.$xml_post);
 // Wharf
 file_put_contents("stop4.xml",$xml_pre.$message_stop3.$xml_post);
+
+echo $location_data;
+
 
 // Load to Amazon S3
 S3::putObject($location_data,$s3_bucket,'wharf.json',S3::ACL_PUBLIC_READ,array(),array('Content-Type' => 'text/plain'),S3::STORAGE_CLASS_RRS);
